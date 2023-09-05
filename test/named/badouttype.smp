@@ -1,0 +1,18 @@
+data tResponseStatus := SUCCESS | ERROR
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int, status: tResponseStatus}
+
+(* The above just means
+data event := 
+  | eRequest {request_id: Int} 
+  | eResponse {response_id: Int, status: tResponseStatus}
+*) 
+
+data [t] list := 
+  | cons {source: Int, target: Int, msg: t, tail: list[t]} 
+  | nil 
+
+function e : list[Int] := cons(1, 2, eResponse(1, SUCCESS), nil)
+
+print(e)

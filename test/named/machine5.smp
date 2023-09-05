@@ -1,0 +1,48 @@
+data ref := C | S
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int}
+
+machine Client
+{
+    var x : Int
+    var server : ref
+
+    state PING {
+        on entry do {
+            send server, eRequest(x)
+        }
+    }
+}
+
+machine Server
+{
+    state PONG {
+        on entry do {
+        
+        }
+
+        on eRequest e do {
+            send e.source, eResponse((e.payload).request_id)
+        }
+    }
+}
+
+function el1 : event_list[ref] := send(C, S, eRequest(100), empty as event_list[ref])
+function el2 : event_list[ref] := send(S, C, eResponse(100), el1)
+
+function s0 : system[ref] := 
+    let machines := const(Client(PING, true, 100, S), Array[ref, machine]) in
+    machines[S] := Server(PONG, false);
+    system(machines, const(false, set[event_list[ref]]))
+
+function s1 : system[ref] := 
+    Client_PING_entry(s0, C)
+
+function s2 : system[ref] := 
+    Server_PONG_eRequest(s1, S, el1)
+
+print((s0.events)[el1])
+print((s1.events)[el1])
+print((s2.events)[el1])
+print((s2.events)[el2])

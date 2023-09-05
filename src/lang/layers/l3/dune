@@ -1,0 +1,3 @@
+(library
+ (name l3)
+ (libraries common l2))

@@ -1,0 +1,11 @@
+data Z := A | B | C
+
+function f (x : Z) : Int := 
+    if x = A then 1
+    else if x = B then 2
+    else 3
+
+assume(exists (y : Z, x : Z) f(y) < 2)
+assume(forall (y : Z, x : Z, z : Z) f(z) < f(x))
+assume(forall (y : Z, x : Z, z : Z) f(x) < 4 and f(y) < 4 and f(z) < 4)
+check

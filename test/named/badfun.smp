@@ -1,0 +1,3 @@
+function f (x : Int, x : Bool) : Int := x
+
+print(f(7))

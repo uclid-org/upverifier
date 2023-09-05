@@ -1,0 +1,5 @@
+data U := A | B | C
+
+function s : Seq[U] := unit(A) ^ unit(B) ^ unit(C)
+
+print(s)

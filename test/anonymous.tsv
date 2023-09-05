@@ -1,0 +1,10 @@
+type t := Int function f : t := 7 print(f())	7\n
+data r := r {first : Int, second : Int}  print(r(1, 2).first)	1\n
+data e := A | B print(1)	1\n
+data l := cons {first : Int, second : Int, tail : l} | nil print(cons(1, 2, nil).first)	1\n
+print(4 * 3 - 3 * 2)	6\n
+print(4 = 4 or 3 = 2 and 1 = 1)	true\n
+print(4 = 3 or (3 = 2 and 1 = 1))	false\n
+data r := r {first : Int, second : Int}  print((let x := r(1, 2) in x.first := 2).first)	2\n
+print(4 * 3 - (* comment *) 3 * 2)	6\n
+function f (x: Int) : Int := x + 1  print(apply(10, f, 0))	10\n

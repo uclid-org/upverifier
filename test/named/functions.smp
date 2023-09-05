@@ -1,0 +1,7 @@
+function f(a: Int, b: Int): Int :=
+  a - b
+
+function g: Int := 5
+
+print(f(14, g()))
+print(f(4, g()))

@@ -1,0 +1,8 @@
+function f (x : Int) : Bool := true
+
+choose x: Int
+choose y: Int
+    with not (x = y + 1)
+
+print(f(x))
+print(f(y))

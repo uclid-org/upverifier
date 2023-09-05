@@ -1,0 +1,17 @@
+(executable
+ (name difftest)
+ (modules difftest)
+ (libraries unix yojson interp compile))
+
+(rule
+ (alias runtest)
+ (deps
+  difftest.exe
+  (glob_files ./data/*)
+  (glob_files ./examples.tsv)
+  (glob_files ./examples/*.smp)
+  (glob_files ./examples/*.out)
+  (glob_files ./examples/*.err)
+  (glob_files ./examples/*.in))
+ (action
+  (run ./difftest.exe)))

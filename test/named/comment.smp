@@ -1,0 +1,11 @@
+function a : Bool := true
+function b : Bool := false
+
+(* 
+print(not (a() and b() or a() or b()))
+
+
+This is a multiline comment
+hi *)
+
+print(not (a() and b() or a() or b()))

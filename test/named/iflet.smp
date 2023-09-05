@@ -1,0 +1,7 @@
+function x : Int := 0
+
+print(if x = 0 then
+  let x := if true then 3 else 4 in
+  x
+else
+  5)

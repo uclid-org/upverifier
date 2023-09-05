@@ -1,0 +1,5 @@
+A
+0
+cons(A, C, eCommand, cons(B, A, eResponse, cons(A, B, eRequest, nil)))
+3
+true

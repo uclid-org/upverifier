@@ -1,0 +1,48 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Int
+
+    state only {
+
+        on entry do {
+            x := 0;
+            goto other
+        }
+
+        on eRequest e do {
+            x := 201
+        }
+
+    }
+    state other {
+
+        on entry do {
+            x := 7
+        }
+
+        on eRequest e do {
+            x := (e.payload).request_id
+        }
+
+    }
+}
+
+data U := A
+
+function e1 : event_list[U] := send(A, A, eRequest(200), empty as event_list[U])
+function e2 : event_list[U] := send(A, A, eRequest(66), empty as event_list[U])
+
+function s0 : system[U] := 
+    let events := const(false, set[event_list[U]]) in
+    events[e1] := true;
+    system(const(Client(only, true, 10), Array[U, machine]), events)
+
+function s1 : system[U] := apply(3, next, s0, A, empty as event_list[U], true)
+
+function s2 : system[U] := next(s1, A, e1, false)
+
+print(((s0.machines)[A]).x)
+print(((s1.machines)[A]).x)
+print(((s2.machines)[A]).x)

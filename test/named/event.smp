@@ -1,0 +1,14 @@
+data tResponseStatus := SUCCESS | ERROR
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int, status: tResponseStatus}
+
+(* The above just means
+data event := 
+  | eRequest {request_id: Int} 
+  | eResponse {response_id: Int, status: tResponseStatus}
+*) 
+
+function e : event_list[Int] := send(1, 2, eResponse(1, SUCCESS), empty)
+
+print(e)

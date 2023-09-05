@@ -1,0 +1,13 @@
+data U := A | B | C
+
+function x : Seq[U] := unit(A) ^ unit(B) 
+function y : Seq[U] := unit(A) ^ unit(A) ^ unit(B)
+
+assume(|y| > |x|)
+check
+assume(contains(x, y))
+check
+assume(suffix(x, y))
+check
+assume(prefix(x, y))
+check

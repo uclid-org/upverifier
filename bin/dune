@@ -1,0 +1,15 @@
+(executable
+ (public_name smpi)
+ (name smpi)
+ (modules smpi)
+ (preprocess
+  (pps ppx_let))
+ (libraries interp compile))
+
+(executable
+ (public_name smpc)
+ (name smpc)
+ (modules smpc)
+ (preprocess
+  (pps ppx_let))
+ (libraries interp compile))

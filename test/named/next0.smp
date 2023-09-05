@@ -1,0 +1,23 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Int
+
+    state only {
+
+        on entry do {
+            x := 0
+        }
+
+    }
+}
+
+data U := A
+
+function s0 : system[U] := system(const(Client(only, true, 10), Array[U, machine]), const(false, set[event_list[U]]))
+
+function s1 : system[U] := next(s0, A, empty as event_list[U], true)
+
+print(((s0.machines)[A]).x)
+print(((s1.machines)[A]).x)

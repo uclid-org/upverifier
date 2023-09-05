@@ -1,0 +1,83 @@
+data ref := C | S
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int}
+
+machine Client
+{
+    var x : Int
+    var server : ref
+
+    state PING {
+        on entry with (w: String, y : Int) do {
+            send server, eRequest(x - y)
+        }
+
+        on eResponse e with (u: Array[Int, Bool]) do {
+            send e.source, eRequest((e.payload).response_id + 1)
+        }
+    }
+
+    state BLAH {
+        on entry with (w1: Bool, y1 : Int) do {
+            send server, eRequest(x - y1)
+        }
+
+        on eResponse e with (u1: Int) do {
+            send e.source, eRequest((e.payload).response_id + 1)
+        }
+    }
+
+}
+
+machine Server
+{
+    state PONG {
+        on entry do {
+        
+        }
+
+        on eRequest e with (v: Array[Bool, Bool], z : Bool) do {
+            if z then
+                send e.source, eResponse((e.payload).request_id + 1)
+            else goto PONG
+        }
+    }
+}
+
+function s0 : system[ref] := 
+    let machines := const(Client(PING, true, 100, S), Array[ref, machine]) in
+    machines[S] := Server(PONG, true);
+    system(machines, const(false, set[event_list[ref]]))
+
+choose (r1 : ref) 
+    with ((((s0.machines)[r1]) is Client) and ((s0.machines)[r1]).Client_entry)
+
+function s1 : system[ref] :=
+    next(s0, r1, empty as event_list[ref], true, "", 100, const(false, set[Int]), true, 0, 0, const(false, set[Bool]), true)
+
+choose (r2 : ref) 
+    with ((((s1.machines)[r2]) is Server) and ((s1.machines)[r2]).Server_entry)
+
+function s2 : system[ref] :=
+    next(s1, r2, empty as event_list[ref], true, "", 100, const(false, set[Int]), true, 0, 0, const(false, set[Bool]), true)
+
+choose (e1: event_list[ref], y1: Bool) 
+    from s2.events 
+    with y1
+
+function s3 : system[ref] :=
+    next(s2, S, e1, false, "", 100, const(false, set[Int]), true, 0, 0, const(false, set[Bool]), true)
+
+choose (e2: event_list[ref], y2: Bool) 
+    from s3.events 
+    with y2
+
+function s4 : system[ref] :=
+    next(s3, C, e2, false, "", 100, const(false, set[Int]), true, 0, 0, const(false, set[Bool]), true)
+
+choose (e3: event_list[ref], y3: Bool) 
+    from s4.events 
+    with y3
+
+print(e3)

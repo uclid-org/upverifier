@@ -1,0 +1,70 @@
+(* smpc client_server_db_ae.smp | z3 -in *)
+
+data node
+
+event eRequest    := {}
+event eResponse   := {}
+event eDBRequest  := {q_src: node}
+event eDBResponse := {p_src: node}
+event eNew        := {}
+
+machine Client {
+    state Act {
+        on eNew t with (n: node) do {
+            send n, eRequest()
+        }
+
+        on eResponse p do {}
+    }
+}
+
+machine Server {
+    state Serve {
+        on eRequest q with (db: node) do {
+            send db, eDBRequest(q.source)
+        }
+
+        on eDBResponse p do {
+            let t := (p.payload).p_src in
+            send t, eResponse()
+        }
+    }
+}
+
+machine DB {
+    state Running {
+        on eDBRequest q do {
+            let t := (q.payload).q_src in
+            send q.source, eDBResponse(t)
+        }
+    }
+}
+
+recursive function path(e: event_list[node]) : Bool :=
+    if e is empty then true
+    else if e.history is empty then 
+        e.payload is eNew
+    else if (e.history).history is empty then
+        e.payload is eRequest and
+        path(e.history)
+    else if ((e.history).history).history is empty then
+        e.payload is eDBRequest and
+        (e.payload).q_src = (e.history).source and
+        path(e.history)
+    else if (((e.history).history).history).history is empty then
+        e.payload is eDBResponse and
+        (e.payload).p_src = ((e.history).payload).q_src and
+        e.target = (e.history).source and
+        path(e.history)
+    else 
+        ((((e.history).history).history).history).history is empty and
+        e.payload is eResponse and
+        e.target = ((e.history).payload).p_src and
+        (* THE FINAL RESPONSE MATCHES THE INITIAL REQUEST *)
+        e.target = (((e.history).history).history).source and
+        path(e.history)
+
+induction (s: system[node])
+    invariant safety: forall (e: event_list[node])
+        (s.events)[e] ==> path(e)
+

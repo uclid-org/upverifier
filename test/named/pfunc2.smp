@@ -1,0 +1,6 @@
+type [k, v] map := Array[k, v]
+
+function [v] fill (default: v) : map[Int, v] := const(default, map[Int, v])
+
+print(fill(0))
+print(fill("test"))

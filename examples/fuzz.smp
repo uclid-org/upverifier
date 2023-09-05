@@ -1,0 +1,60 @@
+(* Run `smpi examples/fuzz.smp` to get one event history after 20 steps of the P protocol below. *)
+(* Note that 20 steps is hard for SMT slovers, so I do not recommend running smpc on this file as is. *)
+
+data ref := C | S
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int, status: Bool}
+
+machine Client
+{
+    var x : Int
+    var server : ref
+
+    state PING {
+        on entry do {
+            send server, eRequest(x)
+        }
+
+        on eResponse e do {
+            send e.source, eRequest(e.payload.response_id)
+        }
+    }
+}
+
+machine Server
+{
+    state PONG {
+        on entry do {
+        
+        }
+
+        on eRequest e with (choice: Bool) do {
+            send e.source, eResponse(e.payload.request_id, choice)
+        }
+    }
+}
+
+choose p: Int
+
+function s0 : system[ref] := 
+    let machines := const(Client(PING, true, p, S), Array[ref, machine]) in
+    let events := const(false, set[event_list[ref]]) in 
+    machines[S] := Server(PONG, true);
+    events[empty as event_list[ref]] := true;
+    system(machines, events)
+
+fuzzed (s : system[ref]) 
+    start s0
+    steps 20 (* change `20` to like `5` if you want to run an SMT solver *)
+
+choose (e : event_list[ref], y: Bool)
+    from (s.events)
+    with y
+        (* change `y` to something like `y and length(e) > 3` 
+            if you want interesting answers from solvers *)
+
+(* After making the two changes suggested above, 
+    add a `check` command and then run `smpc examples/fuzz.smp | z3 -in` *)
+
+print(e)

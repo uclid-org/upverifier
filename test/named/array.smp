@@ -1,0 +1,15 @@
+data input_t := A | B | C
+
+function set (a : Array[input_t, Int]) : Array[input_t, Int] := 
+    a[A] := 1;
+    (if a[A] = 1 then
+        a[B] := 2
+    else 
+        a[B] := 7);
+    a[C] := 3 
+
+function arr : Array[input_t, Int] := set(const(0, Array[input_t, Int]))
+
+print(arr[A])
+print(arr[B])
+print(arr[C])

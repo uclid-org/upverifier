@@ -1,0 +1,22 @@
+data state := state {round : Int}
+
+function update(s : state) : state := 
+  s.round := s.round + 1;
+  (if s.round = 17 then
+    s.round := s.round + 2;
+    s.round := s.round + 3
+  else
+    s.round := s.round + 4;
+    (if s.round >= 30 then
+      s.round := s.round - 30
+    else 
+      s.round := s.round);
+    s.round := s.round + 5);
+  s.round := s.round + 6
+
+function start : state := state(0)
+
+print(start.round)
+print(update(start).round)
+print(update(update(start)).round)
+print(update(update(update(start))).round)

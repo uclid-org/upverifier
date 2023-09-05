@@ -1,0 +1,10 @@
+data mRef := A | B | C
+data eKind := eRequest | eResponse | eCommand
+
+function e : Event := cons(A, C, eCommand, cons(B, A, eResponse, cons(A, B, eRequest, nil)))
+
+data Event := 
+  | cons {source: mRef, target: mRef, kind: eKind, history: Event} 
+  | nil 
+
+print(e.history.history.source)

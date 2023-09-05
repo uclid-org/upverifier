@@ -1,0 +1,7 @@
+data Option := Some {value: Int} | None
+
+data Record := Record {map: Array[Int, Option]}
+
+function s : Record := Record(const(Some(7), Array[Int, Option])) 
+
+print(s.map[0].value)

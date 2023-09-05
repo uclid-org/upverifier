@@ -1,0 +1,51 @@
+(* smpc firewall.smp | cvc5 -i -L smt2 *)
+
+data node
+
+event eMsg := {dst: node}
+
+function internal(n: node) : Bool
+
+function firewall : node
+assume(not internal(firewall()))
+assume(forall (r: node)
+        let n := (s.machines)[r] in
+        (n is Firewall) = (firewall() = r))
+
+recursive function allowed_in (e: event_list[node]) : Bool := 
+    if e is empty then true
+    else if e.history is empty then
+        internal(e.source)
+    else allowed_in(e.history)
+
+machine Firewall {
+    state Monitoring {
+        on eMsg m do {
+            let dst := (m.payload).dst in
+            if internal(m.source) and not internal(dst) then
+                send dst, eMsg(m.source)
+            else if (not internal(m.source)) and internal(dst) and allowed_in(m) then
+                send dst, eMsg(m.source)
+        }
+    }
+}
+
+machine Node {
+    state Only {
+        on entry with (dst: node) do {
+            send firewall(), eMsg(dst)
+        }
+
+        on eMsg m with (reply: Bool) do {
+            let dst := (m.payload).dst in
+            if reply then
+                send firewall(), eMsg(dst)
+        }
+    }
+}
+
+function alive(s: system[node], e: event_list[node]) : Bool := 
+    (s.events)[e] and e is send
+
+induction (s: system[node])
+    invariant safety: forall (e: event_list[node]) (alive(s, e) and internal(e.target)) ==> allowed_in(e)

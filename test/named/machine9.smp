@@ -1,0 +1,18 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Bool
+    ghost y: Bool
+
+    state only {
+
+        on entry do {
+            y := x;
+            x := true
+        }
+
+    }
+}
+
+print(Client(only, true, true, true))

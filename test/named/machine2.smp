@@ -1,0 +1,40 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Bool
+
+    state only {
+
+        on entry do {
+            x := true
+        }
+
+    }
+}
+
+(* the above machine is syntactic sugar for 
+data [R] system := system {machines: Array[R, machine], events: Array[event, Bool]}
+data Client_state := only
+data machine := 
+    | Client {client_state: Client_state, client_entry: Bool, x: Bool}
+
+function [R] Client_only_entry (s : system[R], r : R) : system[R] :=
+    if ((s.machines)[r]).client_state = only and ((s.machines)[r]).client_entry = true then
+        ((s.machines)[r]).x := true
+    else
+        s
+*)
+
+function before : machine := Client(only, true, false)
+
+data U := A | B | C
+
+function s : system[U] := 
+    let s := system(const(before, Array[U, machine]), const(false, set[event_list[U]])) in
+    s := Client_only_entry(s, A)
+
+function after : machine := (s.machines)[A]
+
+print(before.x)
+print(after.x)

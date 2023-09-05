@@ -1,0 +1,29 @@
+system var winner: node
+system ghost test: Int
+
+event eMsg := {id: Int}
+machine Node {
+    var value: Int
+
+    state Search {
+        on eMsg e do {
+            if (e.payload).id = value then
+                s.winner := this
+        }
+    }
+}
+        
+function base : machine := Node(Search, false, 0)
+
+data node := A | B 
+
+function e : event_list[node] := send(A, B, eMsg(0), empty)
+
+function s0 : system[node] := 
+    let s := system(const(base, Array[node, machine]), const(false, set[event_list[node]]), A, 2) in
+    (s.events)[e] := true
+
+function s1 : system[node] := Node_Search_eMsg(s0, B, e)
+
+print(s0.winner)
+print(s1.winner)

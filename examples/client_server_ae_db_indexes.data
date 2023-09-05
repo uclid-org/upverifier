@@ -1,0 +1,7 @@
+data C := C1 | C2 
+data S := S1 | S2 
+data D := D1 | D2
+
+positive example e1 := C1 S1 D1 S1 C1
+positive example e2 := C2 S2 D2 S2 C2
+positive example e3 := C2 S1 D2 S1 C2

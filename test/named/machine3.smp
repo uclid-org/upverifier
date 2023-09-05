@@ -1,0 +1,44 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Int
+
+    state only {
+
+        on entry do {
+            x := 0
+        }
+
+        on eRequest e do {
+            if (e.payload).request_id > 0 then
+                x := x + (e.payload).request_id
+            else
+                x := x - (e.payload).request_id
+        }
+
+    }
+}
+
+data ref := A | B | C | D | E | F
+
+function e1 : event_list[ref] := send(A, D, eRequest(7), empty as event_list[ref])
+
+function s0 : system[ref] := 
+    let events := const(false, set[event_list[ref]]) in
+    events[e1] := true;
+    system(const(Client(only, true, 100), Array[ref, machine]), events)
+
+function s1 : system[ref] := 
+    Client_only_entry(s0, D)
+
+function s2 : system[ref] := 
+    Client_only_eRequest(s1, D, e1)
+
+function d0 : machine := (s0.machines)[D]
+function d1 : machine := (s1.machines)[D]
+function d2 : machine := (s2.machines)[D]
+
+print(d0.x)
+print(d1.x)
+print(d2.x)

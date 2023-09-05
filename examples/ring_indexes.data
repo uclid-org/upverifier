@@ -1,0 +1,5 @@
+data Node := N1 | N2 | N3 | N4
+
+positive example e1 := N4 N1 N2 N3 N4
+positive example e2 := N1 N4 N1 N2 N3 N4
+positive example e3 := N2 N1 N4 N1 N2 N3 N4

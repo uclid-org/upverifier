@@ -1,0 +1,37 @@
+machine Client
+{
+    var client_id : Int
+    var x : Bool
+
+    state first {
+
+    }
+
+    state second {
+
+    }
+}
+
+machine Server
+{
+    var server_id : Int
+    var y : Bool
+
+    state third {
+
+    }
+
+    state fourth {
+
+    }
+}
+
+(* the above is syntactic sugar for 
+data Client_state := first | second 
+data Server_state := third | fourth
+data machine := 
+    | Client {Client_state: Client_state, Client_id: Int, x: Bool}
+    | Server {Server_state: Server_state, Server_id: Int, y: Bool}
+*)
+
+print(Client(first, true, 10, true).Client_state)

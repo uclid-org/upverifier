@@ -1,0 +1,15 @@
+data ref := A | B | C
+
+type [R] set := Array[R, Bool]
+
+function s : set[ref] :=
+    let s:= const(false, set[ref]) in
+    s[B] := true;
+    s[A] := true;
+    s[A] := false
+
+choose (x: ref, y: Bool) from s with y
+
+print(x)
+print(s[x])
+print(y)

@@ -1,0 +1,28 @@
+event eRequest := {request_id: Int}
+
+machine Client
+{
+    var x : Int
+    var friend : ref
+
+    state only {
+        on entry do {
+            send friend, eRequest(x)
+        }
+    }
+}
+
+data ref := A | B
+
+function s0 : system[ref] := 
+    let machines := const(Client(only, true, 100, B), Array[ref, machine]) in
+    machines[B] := Client(only, true, 100, A);
+    system(machines, const(false, set[event_list[ref]]))
+
+function s1 : system[ref] := 
+    Client_only_entry(s0, A)
+
+function el : event_list[ref] := send(A, B, eRequest(100), empty as event_list[ref])
+
+print((s0.events)[el])
+print((s1.events)[el])

@@ -1,0 +1,48 @@
+(* smpc client_server_ae.smp | z3 -in *)
+
+data node
+data request
+data response
+
+event eRequest  := {request_id : request }
+event eResponse := {response_id: response}
+event eTrigger  := {}
+
+function matches(p: response, q: request) : Bool
+
+machine Node {
+    state Act {
+        on eTrigger t with (n: node, q: request) do {
+            send n, eRequest(q)
+        }
+
+        on eRequest q with (p: response) do {
+            if matches(p, (q.payload).request_id) then
+                send q.source, eResponse(p)
+        }
+
+        on eResponse p do {}
+    }
+}
+
+
+recursive function path(e: event_list[node]) : Bool :=
+    if e is empty then true
+    else if e.history is empty then 
+        e.payload is eTrigger
+    else if (e.history).history is empty then
+        e.payload is eRequest and
+        path(e.history)
+    else
+        ((e.history).history).history is empty and
+        e.payload is eResponse and
+        (let p := (e.payload).response_id in
+        let q := ((e.history).payload).request_id in
+        (* THIS MEANS EVERY RESPONSE MACTHES A REQUEST *)
+        matches(p, q)) and 
+        e.target = (e.history).source and
+        path(e.history)
+
+induction (s: system[node])
+    invariant safety: forall (e: event_list[node])
+        (s.events)[e] ==> path(e)

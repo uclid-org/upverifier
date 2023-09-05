@@ -1,0 +1,73 @@
+(* smpc ring_id.smp | z3 -in *)
+
+event eNominate := {id: node}
+
+data node
+
+function le(x: node, y: node): Bool
+assume(forall (x: node) le(x, x))
+assume(forall (x: node, y: node, z: node) 
+    (le(x, y) and le(y, z)) ==> le(x, z))
+assume(forall (x: node, y: node) 
+    (le(x, y) and le(y, x)) ==> x = y)
+assume(forall (x: node, y: node) le(x, y) or le(y, x))
+
+function btw(w: node, x: node, y: node): Bool
+assume(forall (w: node, x: node, y: node, z: node) 
+    (btw(w, x, y) and btw(w, y, z)) ==> btw(w, x, z))
+assume(forall (w: node, x: node, y: node)
+    btw(w, x, y) ==> not btw(w, y, x))
+assume(forall (w: node, x: node, y: node)
+    btw(w, x, y) or btw(w, y, x) or w = x or w = y or x = y)
+assume(forall (x: node, y: node, z: node)
+    btw(x, y, z) ==> btw(y, z, x))
+
+function right(n: node): node
+assume(forall (n: node, z: node) 
+    n != right(n) and ((z != n and z != right(n)) 
+        ==> btw(n, right(n), z)))
+
+function leader(s: system[node], l: node) : Bool := 
+    ((s.machines)[l]).Node_state is Won
+
+machine Node {
+    state Search {
+        on entry do {
+            send right(this), eNominate(this)
+        }
+
+        on eNominate e do {
+            let curr := (e.payload).id in
+            if curr = this then
+                goto Won
+            else if le(this, curr) then 
+                send right(this), eNominate(curr)
+            else 
+                send right(this), eNominate(this)
+        }
+    }
+
+    state Won {}
+}
+
+function alive(s: system[node], e: event_list[node]) : Bool := 
+    s.events[e] and e is send
+
+recursive function participated (e: event_list[node], r: node) : Bool := 
+    if e is empty then false
+    else e.source = r or participated(e.history, r)
+
+induction (s : system[node])
+    invariant unique_leader: forall (l: node, n: node)
+        (leader(s, l) and leader(s, n)) ==> l = n
+
+    invariant leader_max: forall (l: node, n: node)
+        leader(s, l) ==> le(n, l)
+
+    invariant not_complete_means_going_there: forall (e: event_list[node], n: node)
+        let q := (e.payload).id in
+        (alive(s, e) and not participated(e, n)) ==> (btw(q, e.target, n) or e.target = n)
+
+    invariant participated_means_le: forall (e: event_list[node], n: node)
+        let q := (e.payload).id in
+        (alive(s, e) and participated(e, n)) ==> le(n, q)

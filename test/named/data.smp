@@ -1,0 +1,33 @@
+print(e.source)
+print(f(e))
+
+data mRef := A | B | C
+data eKind := eRequest | eResponse | eCommand
+
+function e : Event := cons(A, C, eCommand, cons(B, A, eResponse, cons(A, B, eRequest, nil)))
+
+data Event := 
+  | cons {source: mRef, target: mRef, kind: eKind, history: Event} 
+  | nil 
+
+function f(e: Event): Int :=
+  if e.source = A then 
+    0 
+  else 
+    1
+
+recursive function length1 (e: Event) : Int := 
+  if (e is cons) then
+    1 + length1(e.history)
+  else
+    0
+
+recursive function length2 (e: Event) : Int := 
+  if (e is nil) then
+    0
+  else
+    1 + length2(e.history)
+
+print(e)
+print(length1(e))
+print(length1(e) = length2(e))

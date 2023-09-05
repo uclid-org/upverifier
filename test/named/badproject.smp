@@ -1,0 +1,8 @@
+data [MachineRef, Machine, Event] System := system {machines : Array[MachineRef, Machine], events : Array[Event, Bool]}
+
+data MRef := A | B | C
+data Machine := client {client_id: Int} | server {server_id: Int}
+
+function s : System[MRef, Machine, Int] := system(const(client(0), Array[MRef, Machine]), const(false, Array[Int, Bool])) 
+
+print(exists (x : MRef) ((s.machines)[x]).server_id = 0)

@@ -1,0 +1,91 @@
+(* smpc examples/chain_replication.smp | z3 -in *)
+(* compare to: https://www.usenix.org/legacy/publications/library/proceedings/osdi04/tech/full_papers/renesse/renesse.pdf *)
+
+data id
+data key
+data value
+
+data option_value := some {contents: value} | none
+
+type kvstore := Array[key, option_value]
+
+event write := {to_write_key: key, to_write_value: value}
+event read := {to_read_key: key}
+event response := {read_value: option_value}
+
+event internal := {update_key: key, update_value: value}
+
+function top: id
+function bottom: id
+
+function superset(bigger: kvstore, smaller: kvstore): Bool := forall (k: key) 
+    (smaller[k] is some ==> smaller[k] = bigger[k]) and
+    (bigger[k] is none ==> smaller[k] is none)
+
+machine client { 
+    state writing {
+        on entry with (k: key, v: value) do {
+            send top, write(k, v)
+        }
+    }
+    state reading {
+        on entry with (k: key) do {
+            send bottom, read(k)
+        }
+    }
+}
+
+machine replica {
+    var log: kvstore
+    var succ: id
+
+    state head {
+        on write e do {
+            if log[e.payload.to_write_key] is none then
+                log[e.payload.to_write_key] := some(e.payload.to_write_value);
+                send succ, internal(e.payload.to_write_key, e.payload.to_write_value)
+        }
+    }
+
+    state middle {
+        on internal e do {
+            (* NOTE: the overwriting here makes the proof fail.
+                we need ordered delivery on internal updates to have a stronger guarantee than just "something exists in both"
+                async can't give us that.
+            *)
+            log[e.payload.update_key] := some(e.payload.update_value);
+            send succ, internal(e.payload.update_key, e.payload.update_value)
+        }
+    }
+
+    state tail {
+        on internal e do {
+            log[e.payload.update_key] := some(e.payload.update_value)
+        }
+
+        on read e do {
+            send e.source, response(log[e.payload.to_read_key])
+        }
+    }
+}
+
+function alive(s: system[id], e: event_list[id]) : Bool :=
+    s.events[e] and e is send
+
+induction (s: system[id])
+    invariant head_is_superset_of_tail: 
+        let child := s.machines[bottom] in
+        let parent := s.machines[top] in
+        superset(parent.log, child.log)
+
+    invariant head_commited: forall (e: event_list[id])
+        let root := s.machines[top] in
+        (alive(s, e) and e.payload is internal) ==> root.log[e.payload.update_key] = some(e.payload.update_value)
+
+    invariant one_unique_tail_and_it_is_bottom: forall (n: id)
+        let a := (s.machines)[n] in
+        (a is replica and a.replica_state is tail) = (n = bottom)
+
+    invariant one_unique_head_and_it_is_top: forall (n: id)
+        let a := (s.machines)[n] in
+        (a is replica and a.replica_state is head) = (n = top)

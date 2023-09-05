@@ -1,0 +1,15 @@
+data [MachineRef, Machine, Event] System := system {machines : Array[MachineRef, Machine], events : Array[Event, Bool]}
+
+data MRef := A | B | C
+data MKind := client {client_id: Int} | server {server_id: Int}
+
+function s : System[MRef, MKind, Int] := system(const(client(0), Array[MRef, MKind]), const(false, Array[Int, Bool])) 
+
+function p : Bool := exists (x : MRef) 
+    let m := (s.machines)[x] in
+    if m is server then 
+        m.server_id = 0
+    else 
+        m.client_id = 0
+
+print(p)

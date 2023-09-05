@@ -1,0 +1,26 @@
+data U := A | B | C
+
+type [t] Set := Array[t, Bool]
+
+type U_Set := Set[U]
+
+(* 
+
+function set (a : U_Set) : U_Set := 
+    a[A] := true;
+    a[C] := true
+
+function arr : U_Set := set(const(false, U_Set))
+
+*)
+
+(* The stuff below is equivalent to the stuff commented out above *)
+
+function arr : U_Set := 
+    let a := const(false, U_Set) in 
+        a[A] := true;
+        a[C] := true
+
+print(arr[A])
+print(arr[B])
+print(arr[C])

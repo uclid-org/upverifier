@@ -1,0 +1,4 @@
+function f(a: Int, b: Int): Int :=
+  a - b
+
+print(f(4, true))

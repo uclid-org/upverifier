@@ -1,0 +1,17 @@
+data U := A | B | C
+
+type U_list := list[U]
+
+function l : U_list := cons(A, cons(B, cons(C, nil)))
+
+data [t] list := 
+  | cons {head: t, tail: list[t]} 
+  | nil 
+
+recursive function [t] length (ls: list[t]) : Int := 
+  if (ls is cons) then
+    1 + length(ls.tail)
+  else
+    0
+
+print(length(l))

@@ -1,0 +1,103 @@
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int}
+
+machine Client
+{
+    var x : Int
+
+    state only_client {
+
+        on entry do {
+            x := 0;
+            goto other_client
+        }
+
+        on eRequest e do {
+            x := 201
+        }
+
+        on eResponse e do {
+            x := 201
+        }
+
+    }
+    state other_client {
+
+        on entry do {
+            x := 7
+        }
+
+        on eRequest e do {
+            x := (e.payload).request_id
+        }
+
+        on eResponse e do {
+            x := (e.payload).response_id
+        }
+
+    }
+}
+
+
+machine Server
+{
+    var y : Int
+
+    state only_server {
+
+        on entry do {
+            y := 0;
+            goto other_server
+        }
+
+        on eRequest e do {
+            y := 201
+        }
+
+        on eResponse e do {
+            y := (e.payload).response_id
+        }
+
+    }
+    state other_server {
+
+        on entry do {
+            y := 7
+        }
+
+        on eRequest e do {
+            y := (e.payload).request_id
+        }
+
+        on eResponse e do {
+            y := (e.payload).response_id
+        }
+
+    }
+}
+
+data U := A | B 
+
+function e1 : event_list[U] := send(B, A, eRequest(200), empty as event_list[U])
+function e2 : event_list[U] := send(B, A, eRequest(66), empty as event_list[U])
+
+function s0 : system[U] := 
+    let events := const(false, set[event_list[U]]) in
+    events[e1] := true;
+    system(const(Client(only_client, true, 10), Array[U, machine]), events)
+
+function s1 : system[U] := next(s0, A, empty as event_list[U], true)
+
+function s2 : system[U] := next(s1, A, empty as event_list[U], true)
+
+function s3 : system[U] := next(s2, A, empty as event_list[U], true)
+
+function s4 : system[U] := next(s3, A, e1, false)
+function s5 : system[U] := next(s4, A, e2, false)
+
+print(((s0.machines)[A]).x)
+print(((s1.machines)[A]).x)
+print(((s2.machines)[A]).x)
+print(((s3.machines)[A]).x)
+print(((s4.machines)[A]).x)
+print(((s5.machines)[A]).x)

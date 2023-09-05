@@ -1,0 +1,8 @@
+function f (x : Int) : Int := 
+    x := x + 1;
+    x := x * 2;
+    (if x = 12 then x := 12 else x := -100);
+    x := (if x = 12 then 12 else -100);
+    x := x - 3
+
+print(f(5))

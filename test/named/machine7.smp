@@ -1,0 +1,44 @@
+(* smpc test/named/machine7.smp | cvc5 --incremental --produce-models --lang smt2 *)
+
+data ref := C | S
+
+event eRequest := {request_id: Int}
+event eResponse := {response_id: Int}
+
+machine Client
+{
+    var x : Int
+    var server : ref
+
+    state PING {
+        on entry with (y : Int) do {
+            x := y;
+            send server, eRequest(x)
+        }
+    }
+}
+
+machine Server
+{
+    state PONG {
+        on entry do {
+        
+        }
+
+        on eRequest e with (x : Int) do {
+            send e.source, eResponse(x)
+        }
+    }
+}
+
+function s0 : system[ref] := 
+    system(const(Client(PING, true, 100, S), Array[ref, machine]), const(false, set[event_list[ref]]))
+
+function s1 : system[ref] := 
+    Client_PING_entry(s0, C, 7)
+
+function get_x_C (s: system[ref]) : Int := 
+    ((s.machines)[C]).x
+
+print(get_x_C(s0))
+print(get_x_C(s1))

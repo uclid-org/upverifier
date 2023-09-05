@@ -1,0 +1,9 @@
+data [t, r] list := 
+  | cons {head: t, body: r, tail: list[t, r]} 
+  | nil 
+
+type IntList := list[Int, Bool]
+
+function l : IntList := cons(1, false, cons(true, true, nil))
+
+print(l)

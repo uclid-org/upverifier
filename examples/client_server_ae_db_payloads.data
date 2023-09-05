@@ -1,0 +1,4 @@
+data Sigma := eRequest | eResponse
+
+positive example e1 := eRequest eRequest eResponse eResponse
+positive example e2 := eRequest eRequest eResponse eResponse

@@ -1,0 +1,2 @@
+data T := A | B {a: Int, b: Bool} | C
+data K := D | E | F {b : Int}

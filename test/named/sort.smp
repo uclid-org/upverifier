@@ -1,0 +1,9 @@
+function f(a: h, b: g[f]): h :=
+  b
+
+type f := Int
+type [s] g := Bool
+type h := g[f]
+
+print(true)
+print(f(false, false))

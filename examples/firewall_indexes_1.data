@@ -1,0 +1,7 @@
+data Inner := I1 | I2 
+data Wall  := W
+data Outer := O1 | O2
+
+positive example e1 := I1 W O1 W I1
+positive example e2 := I2 W O1 W I2
+positive example e3 := I1 W O2 W I1

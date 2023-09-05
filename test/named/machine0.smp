@@ -1,0 +1,17 @@
+machine Client
+{
+    var client_id : Int
+}
+
+machine Server
+{
+    var server_id : Int
+}
+
+(* the above is syntactic sugar for 
+data machine := 
+    | Client {client_id: Int}
+    | Server {server_id: Int}
+*)
+
+print(Client(10).client_id)

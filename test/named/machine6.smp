@@ -1,0 +1,53 @@
+(* smpc test/named/machine6.smp | cvc5 --incremental --produce-models --lang smt2 *)
+
+data ref := A (* Tells us how many machines are in the system *)
+
+machine single
+{
+    state first {
+        on entry do {
+            goto second
+        }
+    }
+    state second {
+        on entry do {
+            goto third
+        }
+    }
+    state third {
+        on entry do {
+            goto first
+        }
+    }
+}
+
+(* start helper functions *)
+function string_of_state (s: single_state) : String := 
+    if s = first then "first"
+    else if s = second then "second"
+    else "third" 
+
+function get_state_A (s: system[ref]) : String := 
+    string_of_state(((s.machines)[A]).single_state)
+(* end helper functions *)
+
+
+(* Initial system *)
+function s0 : system[ref] := 
+    system(const(single(first, true), Array[ref, machine]), const(false, set[event_list[ref]]))
+
+(* Take three atomic steps *)
+function s1 : system[ref] := 
+    single_first_entry(s0, A)
+
+function s2 : system[ref] := 
+    single_second_entry(s1, A)
+
+function s3 : system[ref] := 
+    single_third_entry(s2, A)
+
+(* Print out the states with a nice label *)
+print(get_state_A(s0))
+print(get_state_A(s1))
+print(get_state_A(s2))
+print(get_state_A(s3))
