@@ -1,4 +1,4 @@
-(* smpc examples/chain_replication.smp | z3 -in *)
+(* smpc chain_replication.smp | z3 -in *)
 (* compare to: https://www.usenix.org/legacy/publications/library/proceedings/osdi04/tech/full_papers/renesse/renesse.pdf *)
 
 data id
@@ -49,10 +49,7 @@ machine replica {
 
     state middle {
         on internal e do {
-            (* NOTE: the overwriting here makes the proof fail.
-                we need ordered delivery on internal updates to have a stronger guarantee than just "something exists in both"
-                async can't give us that.
-            *)
+            (* NOTE: the overwriting here would make the proof fail if not for line 44. *)
             log[e.payload.update_key] := some(e.payload.update_value);
             send succ, internal(e.payload.update_key, e.payload.update_value)
         }

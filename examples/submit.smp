@@ -1,0 +1,81 @@
+(* smpc submit.smp | z3 -in *)
+
+event eAreWeGood   := {} (* I think it is done, do you? *)
+event eDecision    := {looks_good: Bool} (* Yes, it looks done to me. Or no, it needs work. *)
+event eUpdate      := {submitted: Bool} (* Everyone agreed, so I'm going to submit. Or someone disagreed so I will make change x and try again. *)
+event eAcknowledge := {congratulations: Bool} (* Congratulations or encouragement *)
+
+data email := adesai | epolgreen | fmora | saseshia
+
+machine Coordinator {
+    var tally : Int
+
+    state Working {
+        on entry with (ready_for_feedback: Bool) do {
+            if ready_for_feedback then
+                goto GettingFeedback
+            else
+                goto Working
+        }
+        on eAcknowledge a do {}
+    }
+
+    state GettingFeedback {
+        on entry do {
+            tally := 0;
+            send adesai,    eAreWeGood();
+            send epolgreen, eAreWeGood();
+            send saseshia,  eAreWeGood()
+        }
+
+        on eDecision d do {
+            if d.payload.looks_good then
+                tally := tally + 1;
+                if tally = 3 then
+                    send adesai,    eUpdate(true);
+                    send epolgreen, eUpdate(true);
+                    send saseshia,  eUpdate(true);
+                    goto Done
+            else
+                send adesai,    eUpdate(false);
+                send epolgreen, eUpdate(false);
+                send saseshia,  eUpdate(false);
+                goto Working
+        }
+    }
+
+    state Done {
+        on eAcknowledge a do {}
+    }
+}
+
+machine Participant {
+    state GivingFeedback {
+        on eAreWeGood with (choice: Bool) do {
+            send fmora, eDecision(choice)
+        }
+        on eUpdate u do {
+            if u.payload.submitted then
+                send fmora, eAcknowledge(true)
+            else
+                send fmora, eAcknowledge(false)
+        }
+    }
+}
+
+function alive(s: system[email], e: event_list[email]) : Bool := 
+    s.events[e] and e is send
+
+induction (s: system[email])
+    invariant congratulations_implies_looked_good: forall (e: event_list[email]) alive(s, e) ==>
+        ((e.payload = eAcknowledge(true)) ==> (e.history.history.payload = eDecision(true)))
+
+    invariant congratulations_implies_submitted: forall (e: event_list[email]) alive(s, e) ==>
+        ((e.payload = eAcknowledge(true)) ==> (e.history.payload = eUpdate(true)))
+
+    invariant submitted_implies_looked_good: forall (e: event_list[email]) alive(s, e) ==>
+        ((e.payload = eUpdate(true)) ==> (e.history.payload = eDecision(true)))
+
+
+
+    
